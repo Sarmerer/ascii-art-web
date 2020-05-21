@@ -1,0 +1,24 @@
+.ctnt {
+    max-width: 500px;
+    margin: auto;
+    padding: 30px;
+    text-align: center;
+}
+
+img {
+    width: 200px;
+    height: auto;
+}
+
+h2 {
+    color: peru
+}
+
+a {
+    text-decoration: none;
+    color: peru
+}
+
+#error {
+    color: grey
+}
