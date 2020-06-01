@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <title>ASCII-Art</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel='stylesheet' type='text/css' media='screen' href='static/css/main.css'>
+</head>
+<body>
+    <div class="content">
+        <form action="/" method="POST">
+            <textarea name="text" rows="7" placeholder="Type something here..."></textarea><br />
+            <select name="font">
+                <option value="standard">Standard</option>
+                <option value="shadow">Shadow</option>
+                <option value="thinkertoy">Thinkertoy</option>
+            </select>
+            <button type="submit" value="Submit">Submit</button>
+        </form>
+            <select name="format" id="format">
+                <option value=".txt">.txt</option>
+                <option value=".pdf">.pdf</option>
+                <option value=".json">.pdf</option>
+            </select> 
+    </div>
+    <div class="result">
+        <pre id="text-val">{{.Output}}</pre>
+        <button type="button" value="Download" id="dwn-btn"></button>
+    </div>
+    <script src="static/js/download.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.debug.js" integrity="sha384-NaWTHo/8YCBYJ59830LTz/P4aQZK1sS0SneOgAvhsIl3zBu8r9RevNg5lHCHAuQ/" crossorigin="anonymous"></script>
+</body>
+</html>
