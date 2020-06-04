@@ -12,17 +12,20 @@ function download(filename, text) {
 }
 
 // Start file download.
-document.getElementById("dwn-btn").addEventListener("click", function(){
+document.getElementById("dwn-btn").addEventListener("click", function () {
     var format = document.getElementById("format").value
     // Generate download of hello.txt file with some content
     var text = document.getElementById("text-val").innerHTML;
     var filename = `hello${format}`;
-    
-    if (format == ".pdf"){
-        var doc = new jsPDF();
-        doc.text(text,10,10);
-        doc.save('hello.pdf')
-    }else{
+    var elementHTML = $('#text-val').html();
+    var element = jQuery("#text-val")[0];
+
+    if (format == ".pdf") {
+        var pdf = new jsPDF('p', 'px', 'a4');
+        pdf.addHTML(element).then(()=> {
+            pdf.save('hello.pdf')
+        });
+    } else {
         download(filename, text);
     }
 }, false);

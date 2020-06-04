@@ -14,7 +14,6 @@ import (
 
 var indexTpl *template.Template
 var tpl404 *template.Template
-var dataG Data
 
 type Data struct {
 	Output    string
@@ -24,8 +23,6 @@ type Data struct {
 }
 
 func init() {
-	indexTpl = template.Must(template.ParseGlob("templates/index/*.html"))
-	tpl404 = template.Must(template.ParseGlob("templates/404/*.html"))
 
 	t := time.Now()
 	fmt.Println(t.Format("3:4:5pm"), "Init complete.")
@@ -34,6 +31,7 @@ func init() {
 func main() {
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	http.HandleFunc("/", index)
+	http.HandleFunc("/convert", convert)
 	http.HandleFunc("/export", export)
 
 	t := time.Now()
@@ -44,11 +42,14 @@ func main() {
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
+	indexTpl = template.Must(template.ParseGlob("templates/index/*.html"))
+	tpl404 = template.Must(template.ParseGlob("templates/404/*.html"))
 	if r.URL.Path != "/" {
 		data404 := Data{
 			ErrorCode: 404,
 			Error:     "404 Page not found",
 		}
+		fmt.Println("404 from index")
 		tpl404.ExecuteTemplate(w, "404.html", data404)
 		return
 	}
@@ -66,19 +67,6 @@ func index(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		indexTpl.ExecuteTemplate(w, "index.html", dataI)
-		break
-	case "POST":
-		output, err := student.Draw(r.FormValue("text"), r.FormValue("font"))
-		dataG = Data{
-			ErrorCode: err,
-			Output:    output,
-			Error:     output,
-		}
-		if errorHandle(w, r, dataG) {
-			return
-		}
-		indexTpl.Execute(w, dataG)
-		//export(w, r)
 		break
 	default:
 		data404 := Data{
@@ -100,16 +88,54 @@ func errorHandle(w http.ResponseWriter, r *http.Request, data Data) bool {
 	return false
 }
 
+func convert(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/convert" {
+		data404 := Data{
+			ErrorCode: 404,
+			Error:     "404 Page not found",
+		}
+		fmt.Println("404 from convert")
+		tpl404.ExecuteTemplate(w, "404.html", data404)
+		return
+	}
+	switch r.Method {
+	case "POST":
+		output, err := student.Draw(r.FormValue("text"), r.FormValue("font"))
+		data := Data{
+			ErrorCode: err,
+			Output:    output,
+			Error:     output,
+		}
+		if errorHandle(w, r, data) {
+			return
+		}
+		indexTpl.ExecuteTemplate(w, "result", data)
+		break
+	default:
+		data404 := Data{
+			ErrorCode: 405,
+			Error:     "You are not supposed to be here",
+		}
+		tpl404.ExecuteTemplate(w, "404.html", data404)
+		return
+	}
+}
+
 func export(w http.ResponseWriter, r *http.Request) {
 	format := r.FormValue("format")
 	fileName := randomName() + format
+	output, outErr := student.Draw(r.FormValue("text"), r.FormValue("font"))
+	if outErr != 1 {
+		fmt.Println(outErr)
+		return
+	}
 	f, err := os.Create(fileName)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	l, err := f.WriteString(dataG.Output)
+	l, err := f.WriteString(output)
 	if err != nil {
 		fmt.Println(err)
 		f.Close()
