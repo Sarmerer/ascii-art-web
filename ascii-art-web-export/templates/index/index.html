@@ -10,34 +10,26 @@
 
 <body>
     <div class="content">
-        <form action="/convert" method="POST">
-            <textarea name="text" rows="7" placeholder="Type something here..."></textarea><br />
-            <select name="font">
+            <textarea name="text" rows="7" placeholder="Type something here..." id="input"></textarea><br />
+            <select id="font">
                 <option value="standard">Standard</option>
                 <option value="shadow">Shadow</option>
                 <option value="thinkertoy">Thinkertoy</option>
             </select>
-            <button type="submit" value="Submit">Submit</button>
-        </form>
-        <form action="/export" method="GET">
+            <button type="submit" value="Submit" onclick="process()">Submit</button>
             <select name="format" id="format">
                 <option value=".txt">.txt</option>
                 <option value=".pdf">.pdf</option>
                 <option value=".json">.pdf</option>
             </select>
             <button type="button" value="Download" id="dwn-btn">Export</button>
-        </form>
     </div>
     <div class="result">
-        {{define "result"}}
-        <pre id="text-val">{{.Output}}</pre>
-        {{end}}
+        <pre id="output">Text</pre>
     </div>
-    <script src="//mrrio.github.io/jsPDF/dist/jspdf.debug.js"></script>
-    <script src="https://html2canvas.hertzen.com/dist/html2canvas.js"></script>
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.debug.js"
-        integrity="sha384-NaWTHo/8YCBYJ59830LTz/P4aQZK1sS0SneOgAvhsIl3zBu8r9RevNg5lHCHAuQ/" crossorigin="anonymous">
+    <script src="static/js/main.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
     </script>
 </body>
 

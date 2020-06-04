@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"math/rand"
@@ -23,20 +24,20 @@ type Data struct {
 }
 
 func init() {
-
 	t := time.Now()
 	fmt.Println(t.Format("3:4:5pm"), "Init complete.")
 }
 
 func main() {
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
-	http.HandleFunc("/", index)
-	http.HandleFunc("/convert", convert)
-	http.HandleFunc("/export", export)
+	router := http.NewServeMux()
+	router.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+	router.HandleFunc("/process", process)
+	router.HandleFunc("/export", export)
+	router.HandleFunc("/", index)
 
 	t := time.Now()
 	fmt.Println(t.Format("3:4:5pm"), "Starting server, go to localhost:8080")
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+	if err := http.ListenAndServe(":8080", router); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -88,8 +89,8 @@ func errorHandle(w http.ResponseWriter, r *http.Request, data Data) bool {
 	return false
 }
 
-func convert(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/convert" {
+func process(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/process" {
 		data404 := Data{
 			ErrorCode: 404,
 			Error:     "404 Page not found",
@@ -101,15 +102,24 @@ func convert(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "POST":
 		output, err := student.Draw(r.FormValue("text"), r.FormValue("font"))
-		data := Data{
-			ErrorCode: err,
-			Output:    output,
-			Error:     output,
-		}
-		if errorHandle(w, r, data) {
+		// data := Data{
+		// 	ErrorCode: err,
+		// 	Output:    output,
+		// 	Error:     output,
+		// }
+		// if errorHandle(w, r, data) {
+		// 	return
+		// }
+		// // indexTpl.ExecuteTemplate(w, "result", data)
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, fmt.Sprintf("%v", err), http.StatusInternalServerError)
 			return
 		}
-		indexTpl.ExecuteTemplate(w, "result", data)
+		b, err1 := json.Marshal(output)
+		if err1 != nil {
+			http.Error(w, fmt.Sprintf("%v", err), http.StatusInternalServerError)
+		}
+		w.Write(b)
 		break
 	default:
 		data404 := Data{
