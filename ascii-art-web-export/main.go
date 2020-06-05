@@ -4,9 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"math/rand"
 	"net/http"
-	"os"
 	"text/template"
 	"time"
 
@@ -24,6 +22,8 @@ type Data struct {
 }
 
 func init() {
+	indexTpl = template.Must(template.ParseGlob("templates/index/*.html"))
+	tpl404 = template.Must(template.ParseGlob("templates/404/*.html"))
 	t := time.Now()
 	fmt.Println(t.Format("3:4:5pm"), "Init complete.")
 }
@@ -31,6 +31,7 @@ func init() {
 func main() {
 	router := http.NewServeMux()
 	router.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+	router.HandleFunc("/favicon.ico", faviconHandler)
 	router.HandleFunc("/process", process)
 	router.HandleFunc("/export", export)
 	router.HandleFunc("/", index)
@@ -43,143 +44,93 @@ func main() {
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
-	indexTpl = template.Must(template.ParseGlob("templates/index/*.html"))
-	tpl404 = template.Must(template.ParseGlob("templates/404/*.html"))
 	if r.URL.Path != "/" {
-		data404 := Data{
-			ErrorCode: 404,
-			Error:     "404 Page not found",
-		}
-		fmt.Println("404 from index")
-		tpl404.ExecuteTemplate(w, "404.html", data404)
+		callErrorPage(w, r, 404)
 		return
 	}
 	switch r.Method {
 	case "GET":
-		info, err := student.Draw("1. Type\n2. Select font\n3. Submit\n4. Enjoy :)", "standard")
-		dataI := Data{
-			Output:    info,
-			Error:     info,
-			ErrorCode: err,
-		}
-		if err != 1 {
-			if errorHandle(w, r, dataI) {
-				return
-			}
-		}
-		indexTpl.ExecuteTemplate(w, "index.html", dataI)
-		break
+		indexTpl.ExecuteTemplate(w, "index.html", nil)
 	default:
-		data404 := Data{
-			ErrorCode: 405,
-			Error:     "You are not supposed to be here",
-		}
-		tpl404.ExecuteTemplate(w, "404.html", data404)
+		callErrorPage(w, r, 405)
 		return
 	}
 }
 
-func errorHandle(w http.ResponseWriter, r *http.Request, data Data) bool {
-	if data.ErrorCode != 1 {
-		t := time.Now()
-		fmt.Println(t.Format("3:4:5pm"), "Error while printing. Stopped the operation.")
-		tpl404.ExecuteTemplate(w, "404.html", data)
-		return true
-	}
-	return false
-}
-
 func process(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/process" {
-		data404 := Data{
-			ErrorCode: 404,
-			Error:     "404 Page not found",
-		}
-		fmt.Println("404 from convert")
-		tpl404.ExecuteTemplate(w, "404.html", data404)
+		callErrorPage(w, r, 404)
 		return
 	}
 	switch r.Method {
 	case "POST":
 		output, err := student.Draw(r.FormValue("text"), r.FormValue("font"))
-		// data := Data{
-		// 	ErrorCode: err,
-		// 	Output:    output,
-		// 	Error:     output,
-		// }
-		// if errorHandle(w, r, data) {
-		// 	return
-		// }
-		// // indexTpl.ExecuteTemplate(w, "result", data)
-		if err := r.ParseForm(); err != nil {
-			http.Error(w, fmt.Sprintf("%v", err), http.StatusInternalServerError)
-			return
+		if err != 1 {
+			callErrorPage(w, r, err)
 		}
 		b, err1 := json.Marshal(output)
 		if err1 != nil {
-			http.Error(w, fmt.Sprintf("%v", err), http.StatusInternalServerError)
+			callErrorPage(w, r, 500)
+			return
 		}
 		w.Write(b)
-		break
 	default:
-		data404 := Data{
-			ErrorCode: 405,
-			Error:     "You are not supposed to be here",
-		}
-		tpl404.ExecuteTemplate(w, "404.html", data404)
+		callErrorPage(w, r, 405)
 		return
 	}
 }
 
 func export(w http.ResponseWriter, r *http.Request) {
-	format := r.FormValue("format")
-	fileName := randomName() + format
-	output, outErr := student.Draw(r.FormValue("text"), r.FormValue("font"))
-	if outErr != 1 {
-		fmt.Println(outErr)
+	if r.URL.Path != "/export" {
+		callErrorPage(w, r, 404)
 		return
 	}
-	f, err := os.Create(fileName)
-	if err != nil {
-		fmt.Println(err)
+	switch r.Method {
+	case "GET":
+		output := r.FormValue("output")
+		format := r.FormValue("format")
+		input := r.FormValue("input")
+		switch format {
+		case ".txt":
+			w.Header().Set("Content-Type", "text/plain")
+			w.Header().Set("Content-Disposition", `attachment; filename="`+input+format+`"`)
+		case ".pdf":
+			w.Header().Set("Content-Type", "application/pdf")
+			w.Header().Set("Content-Disposition", `attachment; filename="`+input+format+`"`)
+		default:
+			callErrorPage(w, r, 400)
+			return
+		}
+		w.Write([]byte(output))
+	default:
+		callErrorPage(w, r, 405)
 		return
 	}
-
-	l, err := f.WriteString(output)
-	if err != nil {
-		fmt.Println(err)
-		f.Close()
-		return
-	}
-	fmt.Println(l, "bytes written successfully")
-	err = f.Close()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	w.Header().Set("Content-Disposition", "attachment; filename="+fileName)
-	w.Header().Set("Content-Type", r.Header.Get("Content-Type"))
-	http.ServeFile(w, r, fileName)
-	os.Remove(fileName)
 }
 
-func randomName() string {
-	var seededRand *rand.Rand = rand.New(rand.NewSource(time.Now().UnixNano()))
-	length := 4
-	b := make([]byte, length)
-	var res string
-	charset := "1234567890abcdefghijklmnopqrstyvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	for i := 0; i < 4; i++ {
-		for i := range b {
-			b[i] = charset[seededRand.Intn(len(charset))]
-		}
-		if i > 0 && i < 4 {
-			res += "-"
-			res += string(b)
-		} else {
-			res += string(b)
-		}
+func faviconHandler(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "static/assets/favicon.ico")
+}
+
+func callErrorPage(w http.ResponseWriter, r *http.Request, errorCode int) {
+	var errorMsg string
+
+	switch errorCode {
+	case 404:
+		errorMsg = "404 Page not found"
+	case 405:
+		errorMsg = "405 Wrong method"
+	case 400:
+		errorMsg = "400 Bad request"
+	default:
+		errorMsg = "500 Internal error"
+		errorCode = 500
 	}
-	return res
+
+	data404 := Data{
+		ErrorCode: errorCode,
+		Error:     errorMsg,
+	}
+	tpl404.ExecuteTemplate(w, "404.html", data404)
+	return
 }

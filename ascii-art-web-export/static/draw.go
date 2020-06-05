@@ -26,35 +26,26 @@ func Draw(str, fs string) (string, int) {
 
 	for _, word := range arr {
 
-		tmp, err := convToAscii(word, lines)
-		if err != 1 {
-			t := time.Now()
-			fmt.Println(t.Format("3:4:5pm"), "Error: Invalid symbols")
-			return tmp, 400
-		}
-		res += tmp
+		res += convToAscii(word, lines)
 		res += "\n"
 	}
-	t := time.Now()
-	fmt.Println(t.Format("3:4:5pm"), "Operation complete.")
 	return res, 1
 }
 
-func convToAscii(str string, lines []string) (string, int) {
+func convToAscii(str string, lines []string) string {
 
 	var res string
+	var clearStr string
 	for _, let := range str {
-		if let < 32 || let > 126 {
-			if let != 13 && let != 10 {
-				return "400 Bad request", 400
-			}
+		if (let >= 32 && let <= 126) || (let == 13 || let == 10) {
+			clearStr += string(let)
 		}
 	}
 
 	for i := 1; i <= 8; i++ {
 		var output string
 
-		for _, letter := range str {
+		for _, letter := range clearStr {
 
 			if letter != ' ' {
 				readFrom := (int(letter-32) * 9) + i
@@ -71,7 +62,7 @@ func convToAscii(str string, lines []string) (string, int) {
 		res += output
 		res += "\n"
 	}
-	return res, 1
+	return res
 }
 
 func scanLines(path string) ([]string, error) {
