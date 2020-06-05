@@ -15,8 +15,11 @@ textarea {
 }
 
 .result {
+    background-color: #72482E;
     text-align: center;
     color: white;
+    overflow: auto;
+    overflow-y: auto;
 }
 
 #ascii {

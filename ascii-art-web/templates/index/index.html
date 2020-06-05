@@ -1,25 +1,44 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset='utf-8'>
     <title>ASCII-Art</title>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
     <link rel='stylesheet' type='text/css' media='screen' href='static/css/main.css'>
 </head>
+
 <body>
     <div class="content">
-        <form action="/" method="POST">
-            <textarea name="text" rows="7" placeholder="Type something here..."></textarea><br />
-            <select name="font">
+            <textarea name="text" rows="7" placeholder="Type something here..." id="input" oninput="process()"></textarea><br />
+            <input type="text" id="file-name" placeholder="File name..." maxlength="30">
+            <select id="font" oninput="process()">
                 <option value="standard">Standard</option>
                 <option value="shadow">Shadow</option>
                 <option value="thinkertoy">Thinkertoy</option>
             </select>
-            <button type="submit" value="Submit">Submit</button>
-        </form>
+            <select name="format" id="format">
+                <option value=".txt">.txt</option>
+                <option value=".pdf">.pdf</option>
+            </select>
+            <button type="button" value="Download" id="dwn-btn" onclick="exportFile()">Export</button>
     </div>
     <div class="result">
-        <pre>{{.Output}}</pre>
+        <pre id="output">
+                     _____    _____   _____   _____                              _             __          __         _                ______                                 _    
+            /\      / ____|  / ____| |_   _| |_   _|              /\            | |            \ \        / /        | |              |  ____|                               | |   
+           /  \    | (___   | |        | |     | |    ______     /  \     _ __  | |_   ______   \ \  /\  / /    ___  | |__    ______  | |__    __  __  _ __     ___    _ __  | |_  
+          / /\ \    \___ \  | |        | |     | |   |______|   / /\ \   | '__| | __| |______|   \ \/  \/ /    / _ \ | '_ \  |______| |  __|   \ \/ / | '_ \   / _ \  | '__| | __| 
+         / ____ \   ____) | | |____   _| |_   _| |_            / ____ \  | |    \ |_              \  /\  /    |  __/ | |_) |          | |____   >  <  | |_) | | (_) | | |    \ |_  
+        /_/    \_\ |_____/   \_____| |_____| |_____|          /_/    \_\ |_|     \__|              \/  \/      \___| |_.__/           |______| /_/\_\ | .__/   \___/  |_|     \__| 
+                                                                                                                                                      | |                          
+                                                                                                                                                      |_|                          
+        
+        </pre>
     </div>
+    <script src="static/js/main.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    </script>
 </body>
 </html>

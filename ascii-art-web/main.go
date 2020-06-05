@@ -1,13 +1,14 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"text/template"
 	"time"
 
-	student "./static"
+	student "./pkg/student"
 )
 
 var indexTpl *template.Template
@@ -17,76 +18,119 @@ type Data struct {
 	Output    string
 	ErrorCode int
 	Error     string
+	ID        int
 }
 
 func init() {
 	indexTpl = template.Must(template.ParseGlob("templates/index/*.html"))
 	tpl404 = template.Must(template.ParseGlob("templates/404/*.html"))
-
 	t := time.Now()
 	fmt.Println(t.Format("3:4:5pm"), "Init complete.")
 }
 
 func main() {
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
-	http.HandleFunc("/", index)
+	router := http.NewServeMux()
+	router.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+	router.HandleFunc("/favicon.ico", faviconHandler)
+	router.HandleFunc("/process", process)
+	router.HandleFunc("/export", export)
+	router.HandleFunc("/", index)
 
 	t := time.Now()
 	fmt.Println(t.Format("3:4:5pm"), "Starting server, go to localhost:8080")
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+	if err := http.ListenAndServe(":8080", router); err != nil {
 		log.Fatal(err)
 	}
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
-		data404 := Data{
-			ErrorCode: 404,
-			Error:     "404 Page not found",
-		}
-		tpl404.ExecuteTemplate(w, "404.html", data404)
+		callErrorPage(w, r, 404)
 		return
 	}
-
 	switch r.Method {
 	case "GET":
-		info, err := student.Draw("1. Type\n2. Select font\n3. Submit\n4. Enjoy :)", "standard")
-		dataI := Data{
-			Output:    info,
-			Error:     info,
-			ErrorCode: err,
-		}
-		if err != 1 {
-			if errorHandle(w, r, dataI) {
-				return
-			}
-		}
-		indexTpl.ExecuteTemplate(w, "index.html", dataI)
-		break
-	case "POST":
-		output, err := student.Draw(r.FormValue("text"), r.FormValue("font"))
-		data := Data{
-			ErrorCode: err,
-			Output:    output,
-			Error:     output,
-		}
-		if errorHandle(w, r, data) {
-			return
-		}
-		indexTpl.Execute(w, data)
-		break
+		indexTpl.ExecuteTemplate(w, "index.html", nil)
 	default:
-		fmt.Fprintf(w, "Sorry, only GET and POST methods are supported.")
-		break
+		callErrorPage(w, r, 405)
+		return
 	}
 }
 
-func errorHandle(w http.ResponseWriter, r *http.Request, data Data) bool {
-	if data.ErrorCode != 1 {
-		t := time.Now()
-		fmt.Println(t.Format("3:4:5pm"), "Error while printing. Stopped the operation.")
-		tpl404.ExecuteTemplate(w, "404.html", data)
-		return true
+func process(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/process" {
+		callErrorPage(w, r, 404)
+		return
 	}
-	return false
+	switch r.Method {
+	case "POST":
+		output, err := student.Draw(r.FormValue("text"), r.FormValue("font"))
+		if err != 1 {
+			callErrorPage(w, r, err)
+		}
+		b, err1 := json.Marshal(output)
+		if err1 != nil {
+			callErrorPage(w, r, 500)
+			return
+		}
+		w.Write(b)
+	default:
+		callErrorPage(w, r, 405)
+		return
+	}
+}
+
+func export(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/export" {
+		callErrorPage(w, r, 404)
+		return
+	}
+	switch r.Method {
+	case "GET":
+		output := r.FormValue("output")
+		format := r.FormValue("format")
+		input := r.FormValue("input")
+		switch format {
+		case ".txt":
+			w.Header().Set("Content-Type", "text/plain")
+			w.Header().Set("Content-Disposition", `attachment; filename="`+input+format+`"`)
+		case ".pdf":
+			w.Header().Set("Content-Type", "application/pdf")
+			w.Header().Set("Content-Disposition", `attachment; filename="`+input+format+`"`)
+		default:
+			callErrorPage(w, r, 400)
+			return
+		}
+		w.Write([]byte(output))
+	default:
+		callErrorPage(w, r, 405)
+		return
+	}
+}
+
+func faviconHandler(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "static/assets/favicon.ico")
+}
+
+func callErrorPage(w http.ResponseWriter, r *http.Request, errorCode int) {
+	var errorMsg string
+
+	switch errorCode {
+	case 404:
+		errorMsg = "404 Page not found"
+	case 405:
+		errorMsg = "405 Wrong method"
+	case 400:
+		errorMsg = "400 Bad request"
+	default:
+		errorMsg = "500 Internal error"
+		errorCode = 500
+	}
+
+	data404 := Data{
+		ErrorCode: errorCode,
+		Error:     errorMsg,
+	}
+	tpl404.ExecuteTemplate(w, "404.html", data404)
+	return
 }
