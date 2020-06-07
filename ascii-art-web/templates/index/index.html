@@ -5,40 +5,96 @@
     <meta charset='utf-8'>
     <title>ASCII-Art</title>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel='stylesheet' type='text/css' media='screen' href='static/css/main.css'>
+    <link rel='stylesheet' type='text/css' media='screen' href='static/css/nav.css'>
 </head>
 
 <body>
+    <!-- The overlay -->
+    <div id="myNav" class="overlay">
+
+        <!-- Button to close the overlay navigation -->
+        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+
+        <!-- Overlay content -->
+        <div class="overlay-content">
+            <h3>What is ASCII Art?</h3>
+            <p>ASCII art is a graphic design technique that uses computers for presentation<br> and consists of
+                pictures
+                pieced together
+                from the printable characters defined by the ASCII Standard.</p>
+            <h3>What am I supposed to do here?</h3>
+            <p>Type any text &#8702; Enter file name &#8702; Select file format &#8702; Select a font &#8702; Export
+                &#8702; Enjoy
+                &#9786;</p>
+        </div>
+
+    </div>
+
+    <!-- Use any element to open/show the overlay navigation menu -->
+    <ul>
+
+        <li>
+            <div class="info">
+                <span onclick="openNav()">
+                    <i class="fa fa-question-circle"></i>
+                </span>
+            </div>
+        </li>
+    </ul>
     <div class="content">
-            <textarea name="text" rows="7" placeholder="Type something here..." id="input" oninput="process()"></textarea><br />
-            <input type="text" id="file-name" placeholder="File name..." maxlength="30">
-            <select id="font" oninput="process()">
-                <option value="standard">Standard</option>
-                <option value="shadow">Shadow</option>
-                <option value="thinkertoy">Thinkertoy</option>
-            </select>
-            <select name="format" id="format">
-                <option value=".txt">.txt</option>
-                <option value=".pdf">.pdf</option>
-            </select>
-            <button type="button" value="Download" id="dwn-btn" onclick="exportFile()">Export</button>
+        <textarea name="text" rows="7" placeholder="Type something here..." id="input"
+            oninput="process()"></textarea><br />
+        <input type="text" id="file-name" placeholder="File name..." maxlength="30">
+        <select name="format" id="format">
+            <option value=".txt">.txt</option>
+            <option value=".pdf">.pdf</option>
+        </select>
+        <select id="font" oninput="process()">
+            <option value="standard">Standard</option>
+            <option value="shadow">Shadow</option>
+            <option value="thinkertoy">Thinkertoy</option>
+        </select>
+
+        <button type="button" value="Download" id="dwn-btn" onclick="exportFile()">Export</button>
     </div>
     <div class="result">
         <pre id="output">
-                     _____    _____   _____   _____                              _             __          __         _                ______                                 _    
-            /\      / ____|  / ____| |_   _| |_   _|              /\            | |            \ \        / /        | |              |  ____|                               | |   
-           /  \    | (___   | |        | |     | |    ______     /  \     _ __  | |_   ______   \ \  /\  / /    ___  | |__    ______  | |__    __  __  _ __     ___    _ __  | |_  
-          / /\ \    \___ \  | |        | |     | |   |______|   / /\ \   | '__| | __| |______|   \ \/  \/ /    / _ \ | '_ \  |______| |  __|   \ \/ / | '_ \   / _ \  | '__| | __| 
-         / ____ \   ____) | | |____   _| |_   _| |_            / ____ \  | |    \ |_              \  /\  /    |  __/ | |_) |          | |____   >  <  | |_) | | (_) | | |    \ |_  
-        /_/    \_\ |_____/   \_____| |_____| |_____|          /_/    \_\ |_|     \__|              \/  \/      \___| |_.__/           |______| /_/\_\ | .__/   \___/  |_|     \__| 
-                                                                                                                                                      | |                          
-                                                                                                                                                      |_|                          
-        
+
+
+
+
+
+
+
+
+
+ _                            _     _                                     __   
+| |                          | |   | |                                 _  \ \  
+| |__     ___   _   _        | |_  | |__     ___   _ __    ___        (_)  | | 
+|  _ \   / _ \ | | | |       | __| |  _ \   / _ \ | '__|  / _ \            | | 
+| | | | |  __/ | |_| |       \ |_  | | | | |  __/ | |    |  __/        _   | | 
+|_| |_|  \___|  \__, |        \__| |_| |_|  \___| |_|     \___|       (_)  | | 
+                __/ /                                                     /_/  
+               |___/                                                           
+
+
+
+
+
+
+
+
+
+
         </pre>
     </div>
     <script src="static/js/main.js"></script>
+    <script src="static/js/nav.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
     </script>
 </body>
+
 </html>
