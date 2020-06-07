@@ -4,23 +4,25 @@ function process() {
     var fontSelector = document.getElementById("font");
     var font = fontSelector.options[fontSelector.selectedIndex].value;
 
-    return $.ajax({
-        type: "POST",
-        url: '/process',
-        dataType: "json",
-        data: {
-            "text": $("#input").val(),
-            "font": font
-        },
-        traditional: true,
+    $(document).ready(function () {
+        return $.ajax({
+            type: "POST",
+            url: '/process',
+            dataType: "json",
+            data: {
+                "text": $("#input").val(),
+                "font": font
+            },
+            traditional: true,
 
-        success: function (data) {
-            output = data
-            document.getElementById("output").innerHTML = data
-        },
-        error: function (jqXHR, textStatus, errorThrown) {
-            alert('500 Internal server error')
-        }
+            success: function (data) {
+                output = data
+                document.getElementById("output").innerHTML = data
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                alert('500 Internal server error')
+            }
+        });
     });
 }
 
@@ -31,7 +33,7 @@ function exportFile() {
     var input = ""
     if (fileName) {
         input = fileName
-    }else{
+    } else {
         input = "exported"
     }
     console.log(input);

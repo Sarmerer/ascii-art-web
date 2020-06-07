@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"text/template"
 	"time"
+	"strconv"
 
 	student "./pkg/student"
 )
@@ -89,14 +90,16 @@ func export(w http.ResponseWriter, r *http.Request) {
 	case "GET":
 		output := r.FormValue("output")
 		format := r.FormValue("format")
-		input := r.FormValue("input")
+		fileName := r.FormValue("input")
+
+		w.Header().Set("Content-Length", strconv.Itoa(len(output)))
 		switch format {
 		case ".txt":
 			w.Header().Set("Content-Type", "text/plain")
-			w.Header().Set("Content-Disposition", `attachment; filename="`+input+format+`"`)
+			w.Header().Set("Content-Disposition", `attachment; filename="` +fileName+format+`"`)
 		case ".pdf":
 			w.Header().Set("Content-Type", "application/pdf")
-			w.Header().Set("Content-Disposition", `attachment; filename="`+input+format+`"`)
+			w.Header().Set("Content-Disposition", `attachment; filename="`+fileName+format+`"`)
 		default:
 			callErrorPage(w, r, 400)
 			return
