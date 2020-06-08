@@ -97,9 +97,6 @@ func export(w http.ResponseWriter, r *http.Request) {
 		case ".txt":
 			w.Header().Set("Content-Type", "text/plain")
 			w.Header().Set("Content-Disposition", `attachment; filename="` +fileName+format+`"`)
-		case ".pdf":
-			w.Header().Set("Content-Type", "application/pdf")
-			w.Header().Set("Content-Disposition", `attachment; filename="`+fileName+format+`"`)
 		default:
 			callErrorPage(w, r, 400)
 			return

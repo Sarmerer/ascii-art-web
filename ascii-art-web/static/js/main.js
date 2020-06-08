@@ -28,7 +28,7 @@ function process() {
 
 function exportFile() {
     var formatSelector = document.getElementById("format");
-    var format = formatSelector.options[formatSelector.selectedIndex].value;
+    var format = ".txt"
     var fileName = document.getElementById("file-name").value;
     var input = ""
     if (fileName) {
