@@ -42,6 +42,10 @@ func convToAscii(str string, lines []string) string {
 		}
 	}
 
+	if len(clearStr) > 1000 {
+		clearStr = "Nice try, but no"
+	}
+
 	for i := 1; i <= 8; i++ {
 		var output string
 
