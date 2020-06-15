@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"text/template"
 	"time"
-	"strconv"
 
 	student "./pkg/student"
 )
@@ -30,6 +30,9 @@ func init() {
 }
 
 func main() {
+
+	port := ":4241"
+
 	router := http.NewServeMux()
 	router.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	router.HandleFunc("/favicon.ico", faviconHandler)
@@ -38,8 +41,8 @@ func main() {
 	router.HandleFunc("/", index)
 
 	t := time.Now()
-	fmt.Println(t.Format("3:4:5pm"), "Starting server, go to localhost:8080")
-	if err := http.ListenAndServe(":8080", router); err != nil {
+	fmt.Println(t.Format("3:4:5pm"), "Starting server, go to localhost"+port)
+	if err := http.ListenAndServe(port, router); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -51,8 +54,10 @@ func index(w http.ResponseWriter, r *http.Request) {
 	}
 	switch r.Method {
 	case "GET":
+		w.WriteHeader(http.StatusOK)
 		indexTpl.ExecuteTemplate(w, "index.html", nil)
 	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
 		callErrorPage(w, r, 405)
 		return
 	}
@@ -74,8 +79,10 @@ func process(w http.ResponseWriter, r *http.Request) {
 			callErrorPage(w, r, 500)
 			return
 		}
+		w.WriteHeader(http.StatusOK)
 		w.Write(b)
 	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
 		callErrorPage(w, r, 405)
 		return
 	}
@@ -96,13 +103,16 @@ func export(w http.ResponseWriter, r *http.Request) {
 		switch format {
 		case ".txt":
 			w.Header().Set("Content-Type", "text/plain")
-			w.Header().Set("Content-Disposition", `attachment; filename="` +fileName+format+`"`)
+			w.Header().Set("Content-Disposition", `attachment; filename="`+fileName+format+`"`)
 		default:
+			w.WriteHeader(http.StatusBadRequest)
 			callErrorPage(w, r, 400)
 			return
 		}
+		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(output))
 	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
 		callErrorPage(w, r, 405)
 		return
 	}
@@ -117,12 +127,16 @@ func callErrorPage(w http.ResponseWriter, r *http.Request, errorCode int) {
 
 	switch errorCode {
 	case 404:
+		w.WriteHeader(http.StatusNotFound)
 		errorMsg = "404 Page not found"
 	case 405:
+		w.WriteHeader(http.StatusMethodNotAllowed)
 		errorMsg = "405 Wrong method"
 	case 400:
+		w.WriteHeader(http.StatusBadRequest)
 		errorMsg = "400 Bad request"
 	default:
+		w.WriteHeader(http.StatusInternalServerError)
 		errorMsg = "500 Internal error"
 		errorCode = 500
 	}
