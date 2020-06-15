@@ -79,7 +79,6 @@ func process(w http.ResponseWriter, r *http.Request) {
 			callErrorPage(w, r, 500)
 			return
 		}
-		w.WriteHeader(http.StatusOK)
 		w.Write(b)
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
@@ -109,7 +108,6 @@ func export(w http.ResponseWriter, r *http.Request) {
 			callErrorPage(w, r, 400)
 			return
 		}
-		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(output))
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
