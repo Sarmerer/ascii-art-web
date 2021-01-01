@@ -9,7 +9,9 @@ import (
 )
 
 func Draw(str, fs string) (string, int) {
-
+	if !validFont(fs) {
+		return "Bad request", 400
+	}
 	var res string
 	lines, err := scanLines("fonts/" + fs + ".txt")
 	if err != nil {
@@ -88,4 +90,11 @@ func scanLines(path string) ([]string, error) {
 
 	defer file.Close()
 	return lines, nil
+}
+
+func validFont(font string) bool {
+	if font == "standard" || font == "shadow" || font == "thinkertoy" {
+		return true
+	}
+	return false
 }

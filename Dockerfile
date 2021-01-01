@@ -7,5 +7,5 @@ RUN mkdir /app
 WORKDIR /app
 COPY . /app
 RUN go build -o main .
-EXPOSE 4241
+EXPOSE 4435
 CMD ["./main"]

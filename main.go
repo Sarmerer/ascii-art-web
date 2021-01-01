@@ -9,7 +9,7 @@ import (
 	"text/template"
 	"time"
 
-	drawer "./drawer"
+	drawer "github.com/sarmerer/ascii-art-web/drawer"
 )
 
 var indexTpl *template.Template
@@ -30,9 +30,7 @@ func init() {
 }
 
 func main() {
-
-	port := ":4241"
-
+	port := ":4435"
 	router := http.NewServeMux()
 	router.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	router.HandleFunc("/favicon.ico", faviconHandler)
